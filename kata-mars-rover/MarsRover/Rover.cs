@@ -6,9 +6,12 @@ namespace MarsRover.Tests
         private const int YMax = 3;
         
         public int[] CurrentCoords { get; set; }
-        public Rover(IRandomStartingPointGenerator randomStartingPointGenerator)
+        public Direction CurrentDirection { get; set; }
+
+        public Rover(IRandomStartingPositionGenerator randomStartingPositionGenerator)
         {
-            CurrentCoords = randomStartingPointGenerator.Generate(XMax, YMax);
+            CurrentCoords = randomStartingPositionGenerator.GenerateStartingCoords(XMax, YMax);
+            CurrentDirection = randomStartingPositionGenerator.GenerateStartingDirection();
         }
     }
 }
