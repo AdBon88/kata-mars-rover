@@ -20,7 +20,9 @@ namespace MarsRover
 
         public Direction GenerateStartingDirection()
         {
-            return (Direction)_random.Next(3);
+            var numberOfDirections = Direction.GetNames(typeof(Direction)).Length;
+            var randomDirection = (Direction) _random.Next(numberOfDirections);
+            return randomDirection;
         }
     }
 }
