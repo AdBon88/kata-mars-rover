@@ -22,24 +22,27 @@ namespace MarsRover.Tests
             CurrentDirection = startingPositionGenerator.GenerateStartingDirection();
         }
 
-        public void ProcessInput(string command)
+        public void ProcessInput(string commands)
         {
-            switch (command.ToLower())
+            foreach (var command in commands.ToLower())
             {
-                case "f":
-                    processNextAction(Action.MoveForward);
-                    break;
-                case "b":
-                    processNextAction(Action.MoveBackward);
-                    break;
-                case "l":
-                    processNextAction(Action.TurnLeft);
-                    break;
-                case "r":
-                    processNextAction(Action.TurnRight);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (command)
+                {
+                    case 'f':
+                        processNextAction(Action.MoveForward);
+                        break;
+                    case 'b':
+                        processNextAction(Action.MoveBackward);
+                        break;
+                    case 'l':
+                        processNextAction(Action.TurnLeft);
+                        break;
+                    case 'r':
+                        processNextAction(Action.TurnRight);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 
