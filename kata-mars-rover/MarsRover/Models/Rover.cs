@@ -136,43 +136,25 @@ namespace MarsRover.Tests
         }
         private void TurnLeft()
         {
-            switch (CurrentDirection)
+            CurrentDirection = CurrentDirection switch
             {
-                case Direction.North:
-                    CurrentDirection = Direction.West;
-                    break;
-                case Direction.East:
-                    CurrentDirection = Direction.North;
-                    break;
-                case Direction.South:
-                    CurrentDirection = Direction.East;
-                    break;
-                case Direction.West:
-                    CurrentDirection = Direction.South;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                Direction.North => Direction.West,
+                Direction.East => Direction.North,
+                Direction.South => Direction.East,
+                Direction.West => Direction.South,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
         private void TurnRight()
         {
-            switch (CurrentDirection)
+            CurrentDirection = CurrentDirection switch
             {
-                case Direction.North:
-                    CurrentDirection = Direction.East;
-                    break;
-                case Direction.East:
-                    CurrentDirection = Direction.South;
-                    break;
-                case Direction.South:
-                    CurrentDirection = Direction.West;
-                    break;
-                case Direction.West:
-                    CurrentDirection = Direction.North;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                Direction.North => Direction.East,
+                Direction.East => Direction.South,
+                Direction.South => Direction.West,
+                Direction.West => Direction.North,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
     }
 }
