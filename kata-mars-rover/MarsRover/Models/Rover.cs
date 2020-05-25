@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace MarsRover.Tests
@@ -22,49 +23,28 @@ namespace MarsRover.Tests
             CurrentDirection = startingPositionGenerator.GenerateStartingDirection();
         }
 
-        public void ProcessInput(string commands)
+        public void TranslateCommands(string commands)
         {
             foreach (var command in commands.ToLower())
             {
                 switch (command)
                 {
                     case 'f':
-                        processNextAction(Action.MoveForward);
+                        MoveForward();
                         break;
                     case 'b':
-                        processNextAction(Action.MoveBackward);
+                        MoveBackward();
                         break;
                     case 'l':
-                        processNextAction(Action.TurnLeft);
+                        TurnLeft();
                         break;
                     case 'r':
-                        processNextAction(Action.TurnRight);
+                        TurnRight();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
-        }
-
-        private void processNextAction(Action nextAction)
-        {
-            switch (nextAction)
-            {
-                case Action.MoveForward:
-                    MoveForward();
-                    break;
-                case Action.MoveBackward:
-                    MoveBackward();
-                    break;
-                case Action.TurnLeft:
-                    TurnLeft();
-                    break;
-                case Action.TurnRight:
-                    TurnRight();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }            
         }
 
         private void MoveForward()

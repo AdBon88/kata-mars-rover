@@ -7,6 +7,7 @@ namespace MarsRover.Tests
 {
     public class RoverTests
     {
+        //TODO Research the mock Verify method
         [Fact]
         public void ShouldGenerateRandomStartingCoordsWithinBounds()
         {
@@ -59,7 +60,6 @@ namespace MarsRover.Tests
         [InlineData(Direction.East, "f", new []{2,1})]
         [InlineData(Direction.South, "f", new []{1,2})]
         [InlineData(Direction.West, "f", new []{3,1})]
-
         public void ShouldMoveForwardOneSpaceTowardFacingDirection_OnSingleForwardCommand(Direction mockStartingDirection, string forwardCommand, int[] expected)
         {
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
@@ -67,7 +67,7 @@ namespace MarsRover.Tests
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(mockStartingDirection);
             
             var rover = new Rover(mockRandomStartingPositionGenerator.Object);
-            rover.ProcessInput(forwardCommand);
+            rover.TranslateCommands(forwardCommand);
             var actual = rover.CurrentCoords;
             Assert.Equal(expected, actual);
         }
@@ -85,7 +85,7 @@ namespace MarsRover.Tests
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingDirection);
             
             var rover = new Rover(mockRandomStartingPositionGenerator.Object);
-            rover.ProcessInput(backwardCommand);
+            rover.TranslateCommands(backwardCommand);
             var actual = rover.CurrentCoords;
             Assert.Equal(expected, actual);
         }
@@ -103,7 +103,7 @@ namespace MarsRover.Tests
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingDirection);
 
             var rover = new Rover(mockRandomStartingPositionGenerator.Object);
-            rover.ProcessInput(turnLeftCommand);
+            rover.TranslateCommands(turnLeftCommand);
             
             var actual = rover.CurrentDirection;
             
@@ -123,23 +123,24 @@ namespace MarsRover.Tests
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingDirection);
             var rover = new Rover(mockRandomStartingPositionGenerator.Object);
             
-            rover.ProcessInput(turnLeftCommand);
+            rover.TranslateCommands(turnLeftCommand);
             var actual = rover.CurrentDirection;
             
             Assert.Equal(expected, actual);
         }
 
-        [Fact]
-        public void ShouldCompleteSequenceOfCommands_OnMultipleCommands()
+        [Theory]
+        [InlineData("frflfrrb", new[]{1,2}, Direction.West)]
+        [InlineData("rFFlf", new[]{2,3}, Direction.East)]
+        [InlineData("fffblfrr", new[]{3,3}, Direction.South)]
+        public void ShouldCompleteSequenceOfCommands_OnMultipleCommands(string commands, int[] expectedPosition, Direction expectedDirection)
         {
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoords(3,3)).Returns(new []{1,1});
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(Direction.East);
             var rover = new Rover(mockRandomStartingPositionGenerator.Object);
             
-            rover.ProcessInput("frflfrrb");
-            var expectedPosition = new[] {1, 2};
-            const Direction expectedDirection = Direction.West;
+            rover.TranslateCommands(commands); ;
             var actualPosition = rover.CurrentCoords;
             var actualDirection = rover.CurrentDirection;
             
