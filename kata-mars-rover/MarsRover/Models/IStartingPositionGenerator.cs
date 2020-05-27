@@ -4,7 +4,7 @@ namespace MarsRover
 {
     public interface IStartingPositionGenerator
     {
-        public int[] GenerateStartingCoords(int xMax, int yMax);
+        public Coordinates GenerateStartingCoordsIn(World world);
         public Direction GenerateStartingDirection();
     }
 }

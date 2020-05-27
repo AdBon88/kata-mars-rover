@@ -6,20 +6,15 @@ namespace MarsRover.Tests
 {
     public class Rover
     {
-        //TODO these will get moved to the grid class
-        private const int XMin = 1;
-        private const int YMin = 1;
-        private const int XMax = 3;
-        private const int YMax = 3;
-
-        public int[] CurrentCoords { get; set; }
-        private const int xCoordIndex = 0;
-        private const int yCoordIndex = 1;
+        public World World { get; }
+        public Coordinates CurrentCoords { get;}
         public Direction CurrentDirection { get; set; }
+        
 
-        public Rover(IStartingPositionGenerator startingPositionGenerator)
+        public Rover(IStartingPositionGenerator startingPositionGenerator, World world)
         {
-            CurrentCoords = startingPositionGenerator.GenerateStartingCoords(XMax, YMax);
+            World = world;
+            CurrentCoords = startingPositionGenerator.GenerateStartingCoordsIn(world);
             CurrentDirection = startingPositionGenerator.GenerateStartingDirection();
         }
 
@@ -91,31 +86,32 @@ namespace MarsRover.Tests
         
         private void MoveTowardNorth()
         {
-            if (CurrentCoords[yCoordIndex] > YMin)
-                CurrentCoords[yCoordIndex]--;
+            
+            if (CurrentCoords.Y > 1)
+                CurrentCoords.Y--;
             else
-                CurrentCoords[yCoordIndex] = YMax;
+                CurrentCoords.Y = World.Height;
         }
         private void MoveTowardEast()
         {
-            if (CurrentCoords[xCoordIndex] < XMax)
-                CurrentCoords[xCoordIndex]++;
+            if (CurrentCoords.X < World.Length)
+                CurrentCoords.X++;
             else
-                CurrentCoords[xCoordIndex] = XMin;
+                CurrentCoords.X = 1;
         }
         private void MoveTowardSouth()
         {
-            if (CurrentCoords[yCoordIndex] < YMax)
-                CurrentCoords[yCoordIndex]++;
+            if (CurrentCoords.Y < World.Height)
+                CurrentCoords.Y++;
             else
-                CurrentCoords[yCoordIndex] = YMin;
+                CurrentCoords.Y = 1;
         }
         private void MoveTowardWest()
         {
-            if (CurrentCoords[xCoordIndex] > XMin)
-                CurrentCoords[xCoordIndex]--;
+            if (CurrentCoords.X > 1)
+                CurrentCoords.X--;
             else
-                CurrentCoords[xCoordIndex] = YMax;
+                CurrentCoords.X = World.Height;
         }
         private void TurnLeft()
         {

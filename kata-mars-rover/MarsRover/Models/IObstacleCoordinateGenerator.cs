@@ -6,6 +6,6 @@ namespace MarsRover.Models
 {
     public interface IObstacleCoordinateGenerator
     {
-        public List<Coordinates> Generate(Square[,] availableSquares, int numberOfObstacles);
+        public List<Coordinates> Generate(int length, int height, int numberOfObstacles);
     }
 }

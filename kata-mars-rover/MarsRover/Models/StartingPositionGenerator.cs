@@ -11,13 +11,13 @@ namespace MarsRover
         {
             _random = random;
         }
-        public int[] GenerateStartingCoords(int xMax, int yMax)
+        public Coordinates GenerateStartingCoordsIn(World world)
         {
            
-            var x = _random.Next(1, xMax + 1);
-            var y = _random.Next(1, yMax + 1);
+            var x = _random.Next(1, world.Length + 1);
+            var y = _random.Next(1, world.Height + 1);
             
-            return new []{x, y};
+            return new Coordinates(x, y);
         }
 
         public Direction GenerateStartingDirection()

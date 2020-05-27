@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Xml.XPath;
 using MarsRover.Tests;
 
 namespace MarsRover.Models
@@ -15,13 +16,14 @@ namespace MarsRover.Models
             _random = random;
         }
         
-        public List<Coordinates> Generate(Square[,] availableSquares, int numberOfObstacles)
+        public List<Coordinates> Generate(int length, int height, int numberOfObstacles)
         {
-            if (numberOfObstacles < 0 || numberOfObstacles > availableSquares.Length - 1) throw new ArgumentOutOfRangeException();
+            var maxNumberOfObstacles = length * height - 1; //need to leave at least 1 empty spot for the rover. 
+            if (numberOfObstacles < 0 || numberOfObstacles > maxNumberOfObstacles) throw new ArgumentOutOfRangeException();
             
+            var availableCoords = GetAllPossibleCoords(length, height);
             var obstacleCoords = new List<Coordinates>();
-            var availableCoords = (from Square square in availableSquares select square.Coordinates).ToList();
-
+            
             for (var i = 0; i < numberOfObstacles; i++)
             {
                 var randomIndex = _random.Next(0, availableCoords.Count);
@@ -30,6 +32,19 @@ namespace MarsRover.Models
             }
 
             return obstacleCoords;
+        }
+
+        private static List<Coordinates> GetAllPossibleCoords(int length, int height)
+        {
+            var availableCoords = new List<Coordinates>();
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < length; x++)
+                {
+                    availableCoords.Add(new Coordinates(x, y));
+                }
+            }
+            return availableCoords;
         }
     }
 }
