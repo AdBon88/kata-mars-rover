@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Schema;
@@ -27,20 +28,30 @@ namespace MarsRover.Tests
             mockRandom.Verify(v =>v.Next(1,world.Height + 1)); //random number must be between 1 and yMax + 1
         }
         
-        // //tests that we use the value returned by the starting point generator
-        // [Fact]
-        // public void ShouldHaveRandomInitialStartingPositionAtPositionFreeOfObstacles()
-        // {
-        //     var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
-        //     mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoords(3,3)).Returns(new []{2,2});
-        //     var rover = new Rover(mockRandomStartingPositionGenerator.Object, new Grid(3,3));
-        //     rover.Grid.PlaceObstaclesAtGeneratedCoords();    
-        //     
-        //     var expectedStartingPoint = new[] {2, 2};
-        //     var actualStartingPoint = rover.CurrentCoords;
-        //     
-        //     Assert.Equal(expectedStartingPoint, actualStartingPoint);
-        // }     
+        //tests that we use the value returned by the starting point generator
+        [Fact]
+        public void ShouldHaveRandomInitialStartingPositionAtCoordsFreeOfObstacles()
+        {
+            const int numberOfObstacles = 8;
+            var world = new World(3,3);
+            var mockObstacleCoordsGenerator = new Mock<IObstacleCoordinateGenerator>();
+            mockObstacleCoordsGenerator.Setup(generator => generator
+                    .Generate(world.Length, world.Height, numberOfObstacles))
+                .Returns( new List<Coordinates>
+                {
+                    new Coordinates(1, 1), new Coordinates(2, 1), new Coordinates(3, 1),
+                    new Coordinates(1,2), new Coordinates(2,2), new Coordinates(3,2),
+                    new Coordinates(1,3), new Coordinates(2,3)
+                } );
+            
+            world.GeneratorObstacleCoordinates(numberOfObstacles, mockObstacleCoordsGenerator.Object);
+            var rover = new Rover(new StartingPositionGenerator(new Random()), world);
+
+            var expectedStartingCoords = new []{3,3};
+            var actualStartingCoords = new []{rover.CurrentCoords.X, rover.CurrentCoords.Y};
+
+            Assert.Equal(expectedStartingCoords, actualStartingCoords);
+        }     
         
         [Theory]
         [InlineData(Direction.North)]

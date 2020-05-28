@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using MarsRover.Tests;
 
 namespace MarsRover
@@ -13,12 +16,28 @@ namespace MarsRover
         }
         public Coordinates GenerateStartingCoordsIn(World world)
         {
-           
-            var x = _random.Next(1, world.Length + 1);
-            var y = _random.Next(1, world.Height + 1);
-            
-            return new Coordinates(x, y);
+            Coordinates startingCoords;
+
+            bool generatedCoordsContainObstacle;
+            do
+            {
+                generatedCoordsContainObstacle = false;
+                var x = _random.Next(1, world.Length + 1);
+                var y = _random.Next(1, world.Height + 1);
+
+                startingCoords = new Coordinates(x, y);
+                foreach (var obstacleCoord in world.ObstacleCoordinates)
+                {
+                    if (startingCoords.isEqualTo(obstacleCoord))
+                    {
+                        generatedCoordsContainObstacle = true;
+                    }
+                }
+            } while (generatedCoordsContainObstacle);
+
+            return startingCoords;
         }
+        
 
         public Direction GenerateStartingDirection()
         {

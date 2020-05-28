@@ -10,5 +10,10 @@ namespace MarsRover.Tests
             X = x;
             Y = y;
         }
+
+        public bool isEqualTo(Coordinates coords)
+        {
+            return X == coords.X && Y == coords.Y;
+        }
     }
 }

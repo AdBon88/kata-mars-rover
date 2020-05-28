@@ -11,7 +11,7 @@ namespace MarsRover.Tests
     public class GridTests
     {
         [Fact]
-        public void ShouldGenerateCoordsForObstacles()
+        public void ShouldUseGeneratedCoordsForObstacles()
         {
             const int worldLength = 3;
             const int worldHeight = 3;
@@ -29,19 +29,26 @@ namespace MarsRover.Tests
             Assert.Equal(expectedObstacleCoords, actualObstacleCoords);
         }
         
-        // [Fact]
-        // public void ShouldGenerateStartingCoordsWithoutObstacleForRover()
-        // {
-        //     var grid = new Grid(2,2);
-        //     
-        //     var mockObstacleCoordinateGenerator = new Mock<IObstacleCoordinateGenerator>();
-        //     mockObstacleCoordinateGenerator.Setup(generator =>  generator.Generate(grid.Squares, 3))
-        //         .Returns(new List<Coordinates>(){new Coordinates(1,1), new Coordinates(1,2), new Coordinates(2,1)});
-        //     
-        //     grid.PlaceRoverAtAvailableGeneratedCoordinate(new StartingPositionGenerator(new Random()));
-        //     const SquareContents expected = SquareContents.Rover;
-        //     
-        //     Assert.Equal(expected, grid.GetContentsAt( new Coordinates(3,3) ));
-        // }
+        [Fact]
+        public void ShouldGenerateAllCoords()
+        {
+            var world = new World(2,2);
+            world.GenerateAllCoordinates();
+
+            var expectedCoord1 = new[] {1, 1};
+            var expectedCoord2 = new[] {2, 1};
+            var expectedCoord3 = new[] {1, 2};
+            var expectedCoord4 = new[] {2, 2};
+
+            var actualCoord1 = new[] {world.AllCoordinates[0].X, world.AllCoordinates[0].Y};
+            var actualCoord2 = new[] {world.AllCoordinates[1].X, world.AllCoordinates[1].Y};
+            var actualCoord3 = new[] {world.AllCoordinates[2].X, world.AllCoordinates[2].Y};
+            var actualCoord4 = new[] {world.AllCoordinates[3].X, world.AllCoordinates[3].Y};
+            
+            Assert.Equal(expectedCoord1, actualCoord1);
+            Assert.Equal(expectedCoord2, actualCoord2);
+            Assert.Equal(expectedCoord3, actualCoord3);
+            Assert.Equal(expectedCoord4, actualCoord4);
+        }
     }
 }
