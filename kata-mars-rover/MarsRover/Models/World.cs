@@ -8,7 +8,7 @@ namespace MarsRover.Tests
 {
     public class World
     {
-
+        private const int MinBounds = 1;
         public int Length { get; }
         public int Height { get; }
 
@@ -24,17 +24,18 @@ namespace MarsRover.Tests
 
         public Coordinates GetNextCoordinateTowardNorth(Coordinates currentCoord)
         {
-            return currentCoord.Y > 1
-                ? moveUpOneSpace(currentCoord)
-                : wrapToBottom(currentCoord);
+            var atTopOfGrid = currentCoord.Y == MinBounds;
+            return atTopOfGrid ? 
+                WrapToYMax(currentCoord) : 
+                DecreaseYCoord(currentCoord);
         }
         
-        private Coordinates moveUpOneSpace(Coordinates currentCoord)
+        private Coordinates DecreaseYCoord(Coordinates currentCoord)
         {
-            return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y - 1)
+            return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y - 1);
         }    
 
-        private Coordinates wrapToBottom(Coordinates currentCoord)
+        private Coordinates WrapToYMax(Coordinates currentCoord)
         {
             return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == Height);
         }
