@@ -7,7 +7,7 @@ namespace MarsRover.Tests
     public class Rover
     {
         public World World { get; }
-        public Coordinates CurrentCoords { get;}
+        public Coordinates CurrentCoords { get; set; }
         public Direction CurrentDirection { get; set; }
         
 
@@ -44,75 +44,28 @@ namespace MarsRover.Tests
 
         private void MoveForward()
         {
-            switch (CurrentDirection)
+            CurrentCoords = CurrentDirection switch
             {
-                case Direction.North:
-                    MoveTowardNorth();
-                    break;
-                case Direction.East:
-                    MoveTowardEast();
-                    break;
-                case Direction.South:
-                    MoveTowardSouth();
-                    break;
-                case Direction.West:
-                    MoveTowardWest();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                Direction.North => World.GetNextCoordinateTowardNorth(CurrentCoords),
+                Direction.East => World.GetNextCoordinateTowardEast(CurrentCoords),
+                Direction.South => World.GetNextCoordinateTowardSouth(CurrentCoords),
+                Direction.West => World.GetNextCoordinateTowardWest(CurrentCoords),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
         
         private void MoveBackward()
         {
-            switch (CurrentDirection)
+            CurrentCoords = CurrentDirection switch
             {
-                case Direction.North:
-                    MoveTowardSouth();
-                    break;
-                case Direction.East:
-                    MoveTowardWest();
-                    break;
-                case Direction.South:
-                    MoveTowardNorth();
-                    break;
-                case Direction.West:
-                    MoveTowardEast();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                Direction.North => World.GetNextCoordinateTowardSouth(CurrentCoords),
+                Direction.East => World.GetNextCoordinateTowardWest(CurrentCoords),
+                Direction.South => World.GetNextCoordinateTowardNorth(CurrentCoords),
+                Direction.West => World.GetNextCoordinateTowardEast(CurrentCoords),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
         
-        private void MoveTowardNorth()
-        {
-            
-            if (CurrentCoords.Y > 1)
-                CurrentCoords.Y--;
-            else
-                CurrentCoords.Y = World.Height;
-        }
-        private void MoveTowardEast()
-        {
-            if (CurrentCoords.X < World.Length)
-                CurrentCoords.X++;
-            else
-                CurrentCoords.X = 1;
-        }
-        private void MoveTowardSouth()
-        {
-            if (CurrentCoords.Y < World.Height)
-                CurrentCoords.Y++;
-            else
-                CurrentCoords.Y = 1;
-        }
-        private void MoveTowardWest()
-        {
-            if (CurrentCoords.X > 1)
-                CurrentCoords.X--;
-            else
-                CurrentCoords.X = World.Height;
-        }
         private void TurnLeft()
         {
             CurrentDirection = CurrentDirection switch

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MarsRover.Models;
+using Random = System.Random;
 
 namespace MarsRover.Tests
 {
@@ -18,6 +20,38 @@ namespace MarsRover.Tests
             Length = length;
             Height = height;
             AllCoordinates = GenerateAllCoordinates();
+        }
+
+        public Coordinates GetNextCoordinateTowardNorth(Coordinates currentCoord)
+        {
+            return currentCoord.Y > 1
+                ? moveUpOneSpace(currentCoord)
+                : wrapToBottom(currentCoord);
+        }
+        
+        private Coordinates moveUpOneSpace(Coordinates currentCoord)
+        {
+            return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y - 1)
+        }    
+
+        private Coordinates wrapToBottom(Coordinates currentCoord)
+        {
+            return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == Height);
+        }
+
+        public Coordinates GetNextCoordinateTowardEast(Coordinates currentCoord)
+        {
+            return currentCoord.X < Length ? AllCoordinates.Find(coord => coord.X == currentCoord.X + 1 && coord.Y == currentCoord.Y) : AllCoordinates.Find(coord => coord.X == 1 && coord.Y == currentCoord.Y);
+        }
+        
+        public Coordinates GetNextCoordinateTowardSouth(Coordinates currentCoord)
+        {
+            return currentCoord.Y < Height ? AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y + 1) : AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == 1);
+        }
+
+        public Coordinates GetNextCoordinateTowardWest(Coordinates currentCoord)
+        {
+            return currentCoord.X > 1 ? AllCoordinates.Find(coord => coord.X == currentCoord.X - 1 && coord.Y == currentCoord.Y) : AllCoordinates.Find(coord => coord.X == Length && coord.Y == currentCoord.Y);
         }
 
         public void GeneratorObstacleCoordinates(int numberOfObstacles, IObstacleCoordinateGenerator obstacleCoordGenerator)
