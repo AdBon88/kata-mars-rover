@@ -6,10 +6,10 @@ namespace MarsRover.Tests
 {
     public class Rover
     {
-        public World World { get; }
-        public Coordinates CurrentCoords { get; set; }
-        public Direction CurrentDirection { get; set; }
-        
+        private World World { get; }
+        public Coordinates CurrentCoords { get; private set; }
+        public Direction CurrentDirection { get; private set; }
+
 
         public Rover(IStartingPositionGenerator startingPositionGenerator, World world)
         {
@@ -18,7 +18,7 @@ namespace MarsRover.Tests
             CurrentDirection = startingPositionGenerator.GenerateStartingDirection();
         }
 
-        public void TranslateCommands(string commands)
+        public string TranslateCommands(string commands)
         {
             foreach (var command in commands.ToLower())
             {
@@ -40,20 +40,40 @@ namespace MarsRover.Tests
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
+            return "";
         }
 
-        private void MoveForward()
+        private string MoveForward()
         {
-            CurrentCoords = CurrentDirection switch
+            switch (CurrentDirection)
             {
-                Direction.North => World.GetNextCoordinateTowardNorth(CurrentCoords),
-                Direction.East => World.GetNextCoordinateTowardEast(CurrentCoords),
-                Direction.South => World.GetNextCoordinateTowardSouth(CurrentCoords),
-                Direction.West => World.GetNextCoordinateTowardWest(CurrentCoords),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                case Direction.North:
+                    CurrentCoords = World.GetNextCoordinateTowardNorth(CurrentCoords);
+                    // if (World.ObstacleCoordinates.Exists(c => c.X == nextCoordinate.X && c.Y == nextCoordinate.Y))
+                    // {
+                    //     return $"Cannot move to coord ({nextCoordinate.X},{nextCoordinate.Y}) - there is an obstacle here!";
+                    // }
+                    // else
+                    // {
+                    //     CurrentCoords = nextCoordinate;
+                    //     return "";
+                    // }
+                    return "";
+                case Direction.East:
+                    CurrentCoords = World.GetNextCoordinateTowardEast(CurrentCoords);
+                    return "";
+                case Direction.South:
+                    CurrentCoords = World.GetNextCoordinateTowardSouth(CurrentCoords);
+                    return "";
+                case Direction.West:
+                    CurrentCoords = World.GetNextCoordinateTowardWest(CurrentCoords);
+                    return "";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
-        
+
         private void MoveBackward()
         {
             CurrentCoords = CurrentDirection switch
@@ -65,7 +85,7 @@ namespace MarsRover.Tests
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
-        
+
         private void TurnLeft()
         {
             CurrentDirection = CurrentDirection switch
@@ -77,6 +97,7 @@ namespace MarsRover.Tests
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+
         private void TurnRight()
         {
             CurrentDirection = CurrentDirection switch
