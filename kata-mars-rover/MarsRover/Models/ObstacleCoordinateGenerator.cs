@@ -16,12 +16,12 @@ namespace MarsRover.Models
             _random = random;
         }
         
-        public List<Coordinates> Generate(int length, int height, int numberOfObstacles)
+        public List<Coordinates> Generate(List<Coordinates> worldCoordinates, int numberOfObstacles)
         {
-            var maxNumberOfObstacles = length * height - 1; //need to leave at least 1 empty spot for the rover. 
+            var maxNumberOfObstacles = worldCoordinates.Count- 1; //need to leave at least 1 empty spot for the rover. 
             if (numberOfObstacles < 0 || numberOfObstacles > maxNumberOfObstacles) throw new ArgumentOutOfRangeException();
             
-            var availableCoords = GetAllPossibleCoords(length, height);
+            var availableCoords = worldCoordinates;
             var obstacleCoords = new List<Coordinates>();
             
             for (var i = 0; i < numberOfObstacles; i++)

@@ -1,21 +1,14 @@
 namespace MarsRover.Tests
 {
-    public class Coordinates
+    public readonly struct Coordinates
     {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public bool HasObstacle { get; set; } = false;
-        
+        public int X { get;}
+        public int Y { get;}
 
         public Coordinates(int x, int y)
         {
             X = x;
             Y = y;
-        }
-
-        public bool isEqualTo(Coordinates coords)
-        {
-            return X == coords.X && Y == coords.Y;
         }
     }
 }

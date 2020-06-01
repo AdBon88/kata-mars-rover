@@ -19,13 +19,12 @@ namespace MarsRover.Tests
             mockRandom.Setup(random =>  random.Next(It.IsAny<int>(),It.IsAny<int>())).Returns(3);
             var generator = new StartingPositionGenerator(mockRandom.Object);
             
-            var generatedCoordObject = generator.GenerateStartingCoordsIn(world);
-            var expectedStartingPoint = new []{3, 3};
-            var actualStartingPoint = new[] {generatedCoordObject.X, generatedCoordObject.Y};
+            var expectedStartingPoint = world.Coordinates[3];
+            var actualStartingPoint = generator.GenerateStartingCoordsIn(world);
             
             Assert.Equal(expectedStartingPoint, actualStartingPoint);
-            mockRandom.Verify(v =>v.Next(1,world.Length + 1)); //random number must be between 1 and xMax + 1
-            mockRandom.Verify(v =>v.Next(1,world.Height + 1)); //random number must be between 1 and yMax + 1
+            mockRandom.Verify(v =>v.Next(0,world.Coordinates.Count)); //generated coordinate must be within the available coords
+
         }
         
         //tests that we use the value returned by the starting point generator
@@ -35,20 +34,29 @@ namespace MarsRover.Tests
             const int numberOfObstacles = 8;
             var world = new World(3,3);
             var mockObstacleCoordsGenerator = new Mock<IObstacleCoordinateGenerator>();
+            var obstacleCoord1 = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 1);
+            var obstacleCoord2 = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 2);
+            var obstacleCoord3 = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 3);
+            var obstacleCoord4 = world.Coordinates.Find(coord => coord.X == 2 && coord.Y == 1);
+            var obstacleCoord5 = world.Coordinates.Find(coord => coord.X == 2 && coord.Y == 2);
+            var obstacleCoord6 = world.Coordinates.Find(coord => coord.X == 2 && coord.Y == 3);
+            var obstacleCoord7 = world.Coordinates.Find(coord => coord.X == 3 && coord.Y == 1);
+            var obstacleCoord8 = world.Coordinates.Find(coord => coord.X == 3 && coord.Y == 2);
+            
             mockObstacleCoordsGenerator.Setup(generator => generator
-                    .Generate(world.Length, world.Height, numberOfObstacles))
+                    .Generate(world.Coordinates, numberOfObstacles))
                 .Returns( new List<Coordinates>
                 {
-                    new Coordinates(1, 1), new Coordinates(2, 1), new Coordinates(3, 1),
-                    new Coordinates(1,2), new Coordinates(2,2), new Coordinates(3,2),
-                    new Coordinates(1,3), new Coordinates(2,3)
+                    obstacleCoord1, obstacleCoord2, obstacleCoord3,
+                    obstacleCoord4, obstacleCoord5, obstacleCoord6,
+                    obstacleCoord7, obstacleCoord8
                 } );
             
-            world.GeneratorObstacleCoordinates(numberOfObstacles, mockObstacleCoordsGenerator.Object);
+            world.GenerateObstacleCoordinates(numberOfObstacles, mockObstacleCoordsGenerator.Object);
             var rover = new Rover(new StartingPositionGenerator(new Random()), world);
 
-            var expectedStartingCoords = new []{3,3};
-            var actualStartingCoords = new []{rover.CurrentCoords.X, rover.CurrentCoords.Y};
+            var expectedStartingCoords = world.Coordinates.Find(coord => coord.X == 3 && coord.Y == 3);
+            var actualStartingCoords = rover.CurrentCoords;
 
             Assert.Equal(expectedStartingCoords, actualStartingCoords);
         }     

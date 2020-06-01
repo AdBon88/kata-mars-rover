@@ -16,26 +16,10 @@ namespace MarsRover
         }
         public Coordinates GenerateStartingCoordsIn(World world)
         {
-            Coordinates startingCoords;
-
-            bool generatedCoordsContainObstacle;
-            do
-            {
-                generatedCoordsContainObstacle = false;
-                var x = _random.Next(1, world.Length + 1);
-                var y = _random.Next(1, world.Height + 1);
-
-                startingCoords = new Coordinates(x, y);
-                foreach (var obstacleCoord in world.ObstacleCoordinates)
-                {
-                    if (startingCoords.isEqualTo(obstacleCoord))
-                    {
-                        generatedCoordsContainObstacle = true;
-                    }
-                }
-            } while (generatedCoordsContainObstacle);
-
-            return startingCoords;
+            var availableCoords = world.Coordinates.Except(world.ObstacleCoordinates).ToList();
+            var randomIndex = _random.Next(0, availableCoords.Count);
+            var roverStartingCoords = availableCoords[randomIndex];
+            return roverStartingCoords;
         }
         
 

@@ -12,55 +12,16 @@ namespace MarsRover.Tests
         public int Length { get; }
         public int Height { get; }
 
-        public List<Coordinates> AllCoordinates { get; } = new List<Coordinates>();
+        public List<Coordinates> Coordinates { get; } = new List<Coordinates>();
         public List<Coordinates> ObstacleCoordinates { get; private set; } = new List<Coordinates>();
         
         public World(int length, int height)
         {
             Length = length;
             Height = height;
-            AllCoordinates = GenerateAllCoordinates();
+            Coordinates = GenerateCoordinates();
         }
-
-        public Coordinates GetNextCoordinateTowardNorth(Coordinates currentCoord)
-        {
-            var atTopOfGrid = currentCoord.Y == MinBounds;
-            return atTopOfGrid ? 
-                WrapToYMax(currentCoord) : 
-                DecreaseYCoord(currentCoord);
-        }
-        
-        private Coordinates DecreaseYCoord(Coordinates currentCoord)
-        {
-            return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y - 1);
-        }    
-
-        private Coordinates WrapToYMax(Coordinates currentCoord)
-        {
-            return AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == Height);
-        }
-
-        public Coordinates GetNextCoordinateTowardEast(Coordinates currentCoord)
-        {
-            return currentCoord.X < Length ? AllCoordinates.Find(coord => coord.X == currentCoord.X + 1 && coord.Y == currentCoord.Y) : AllCoordinates.Find(coord => coord.X == 1 && coord.Y == currentCoord.Y);
-        }
-        
-        public Coordinates GetNextCoordinateTowardSouth(Coordinates currentCoord)
-        {
-            return currentCoord.Y < Height ? AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y + 1) : AllCoordinates.Find(coord => coord.X == currentCoord.X && coord.Y == 1);
-        }
-
-        public Coordinates GetNextCoordinateTowardWest(Coordinates currentCoord)
-        {
-            return currentCoord.X > 1 ? AllCoordinates.Find(coord => coord.X == currentCoord.X - 1 && coord.Y == currentCoord.Y) : AllCoordinates.Find(coord => coord.X == Length && coord.Y == currentCoord.Y);
-        }
-
-        public void GeneratorObstacleCoordinates(int numberOfObstacles, IObstacleCoordinateGenerator obstacleCoordGenerator)
-        {
-            ObstacleCoordinates = obstacleCoordGenerator.Generate(Length, Height, numberOfObstacles);
-        }
-
-        public List<Coordinates> GenerateAllCoordinates()
+        public List<Coordinates> GenerateCoordinates()
         {
             var worldCoordinates = new List<Coordinates>();
             for (var y = 1; y <= Height; y++)
@@ -70,8 +31,85 @@ namespace MarsRover.Tests
                     worldCoordinates.Add(new Coordinates(x, y));
                 }
             }
-
             return worldCoordinates;
         }
+
+        public void GenerateObstacleCoordinates(int numberOfObstacles, IObstacleCoordinateGenerator obstacleCoordGenerator)
+        {
+            ObstacleCoordinates = obstacleCoordGenerator.Generate(Coordinates, numberOfObstacles);
+        }
+        
+        public Coordinates GetNextCoordinateTowardNorth(Coordinates currentCoord)
+        {
+            var isAtNorthEdge = currentCoord.Y == MinBounds;
+            return isAtNorthEdge 
+                ? WrapToSouthEdge(currentCoord) 
+                : DecreaseYCoord(currentCoord);
+        }
+        
+        private Coordinates DecreaseYCoord(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y - 1);
+        }    
+
+        private Coordinates WrapToSouthEdge(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == currentCoord.X && coord.Y == Height);
+        }
+
+        public Coordinates GetNextCoordinateTowardEast(Coordinates currentCoord)
+        {
+            var isAtEastEdge = currentCoord.X == Length;
+            return isAtEastEdge 
+                ? WrapToWestEdge(currentCoord) 
+                : IncreaseXCoord(currentCoord);
+        }
+
+        private Coordinates WrapToWestEdge(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == MinBounds && coord.Y == currentCoord.Y);
+        }
+
+        private Coordinates IncreaseXCoord(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == currentCoord.X + 1 && coord.Y == currentCoord.Y);
+        }
+
+        public Coordinates GetNextCoordinateTowardSouth(Coordinates currentCoord)
+        {
+            var isAtSouthEdge = currentCoord.Y == Height;
+            return isAtSouthEdge
+                ? WrapToNorthEdge(currentCoord)
+                : IncreaseYCoord(currentCoord);
+        }
+
+        private Coordinates WrapToNorthEdge(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == currentCoord.X && coord.Y == MinBounds);
+        }
+        
+        private Coordinates IncreaseYCoord(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == currentCoord.X && coord.Y == currentCoord.Y + 1);
+        }
+
+        public Coordinates GetNextCoordinateTowardWest(Coordinates currentCoord)
+        {
+            var isAtWestEdge = currentCoord.X == MinBounds;
+            return isAtWestEdge 
+                ? WrapToEastEdge(currentCoord)
+                : DecreaseXCoord(currentCoord);
+        }
+
+        private Coordinates WrapToEastEdge(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == Length && coord.Y == currentCoord.Y);
+        }
+
+        private Coordinates DecreaseXCoord(Coordinates currentCoord)
+        {
+            return Coordinates.Find(coord => coord.X == currentCoord.X - 1 && coord.Y == currentCoord.Y);
+        }
+        
     }
 }
