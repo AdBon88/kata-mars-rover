@@ -1,6 +1,6 @@
-namespace MarsRover.Tests
+namespace MarsRover
 {
-    public enum Direction
+    public enum Orientation
     {
         North,
         East,

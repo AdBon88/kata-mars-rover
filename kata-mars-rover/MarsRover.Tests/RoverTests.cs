@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Schema;
 using MarsRover.Models;
@@ -29,151 +30,183 @@ namespace MarsRover.Tests
         
         //tests that we use the value returned by the starting point generator
         [Fact]
-        public void ShouldHaveRandomInitialStartingPositionAtCoordsFreeOfObstacles()
+        public void ShouldHaveInitialStartingPositionAtCoordsFreeOfObstacles()
         {
             const int numberOfObstacles = 8;
             var world = new World(3,3);
-            var mockObstacleCoordsGenerator = new Mock<IObstacleCoordinateGenerator>();
-            var obstacleCoord1 = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 1);
-            var obstacleCoord2 = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 2);
-            var obstacleCoord3 = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 3);
-            var obstacleCoord4 = world.Coordinates.Find(coord => coord.X == 2 && coord.Y == 1);
-            var obstacleCoord5 = world.Coordinates.Find(coord => coord.X == 2 && coord.Y == 2);
-            var obstacleCoord6 = world.Coordinates.Find(coord => coord.X == 2 && coord.Y == 3);
-            var obstacleCoord7 = world.Coordinates.Find(coord => coord.X == 3 && coord.Y == 1);
-            var obstacleCoord8 = world.Coordinates.Find(coord => coord.X == 3 && coord.Y == 2);
-            
-            mockObstacleCoordsGenerator.Setup(generator => generator
-                    .Generate(world.Coordinates, numberOfObstacles))
-                .Returns( new List<Coordinates>
-                {
-                    obstacleCoord1, obstacleCoord2, obstacleCoord3,
-                    obstacleCoord4, obstacleCoord5, obstacleCoord6,
-                    obstacleCoord7, obstacleCoord8
-                } );
-            
-            world.GenerateObstacleCoordinates(numberOfObstacles, mockObstacleCoordsGenerator.Object);
+            world.GenerateObstacleCoordinates(numberOfObstacles, new ObstacleGenerator(new Random()));
+
+            var obstacleCoordinates = world.Obstacles.Select(obstacle => obstacle.Coordinates).ToList();
             var rover = new Rover(new StartingPositionGenerator(new Random()), world);
 
-            var expectedStartingCoords = world.Coordinates.Find(coord => coord.X == 3 && coord.Y == 3);
-            var actualStartingCoords = rover.CurrentCoords;
-
-            Assert.Equal(expectedStartingCoords, actualStartingCoords);
+            Assert.False(obstacleCoordinates.Contains(rover.CurrentCoords));
         }     
         
         [Theory]
-        [InlineData(Direction.North)]
-        [InlineData(Direction.East)]
-        [InlineData(Direction.South)]
-        [InlineData(Direction.West)]
+        [InlineData(Orientation.North)]
+        [InlineData(Orientation.East)]
+        [InlineData(Orientation.South)]
+        [InlineData(Orientation.West)]
 
-        public void ShouldHaveRandomInitialStartingDirection(Direction mockStartingDirection)
+        public void ShouldHaveRandomInitialStartingDirection(Orientation mockStartingOrientation)
         {
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
-            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(mockStartingDirection);
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(mockStartingOrientation);
             var rover = new Rover(mockRandomStartingPositionGenerator.Object, new World(3,3));
 
-            var expectedStartingDirection = mockStartingDirection;
-            var actualStartingDirection = rover.CurrentDirection;
+            var expectedStartingDirection = mockStartingOrientation;
+            var actualStartingDirection = rover.CurrentOrientation;
             
             Assert.Equal(expectedStartingDirection, actualStartingDirection);
         }
         
         [Theory]
-        [InlineData(Direction.North, "f", new[]{1,3})]
-        [InlineData(Direction.East, "f", new[]{2,1})]
-        [InlineData(Direction.South, "f", new[]{1,2})]
-        [InlineData(Direction.West, "f", new[]{3,1})]
-        public void ShouldMoveForwardOneSpaceTowardFacingDirection_OnSingleForwardCommand(Direction mockStartingDirection, string forwardCommand, int[] expected)
+        [InlineData(Orientation.North, "f", "1,3")]
+        [InlineData(Orientation.East, "f", "2,1")]
+        [InlineData(Orientation.South, "f", "1,2")]
+        [InlineData(Orientation.West, "f", "3,1")]
+        public void ShouldMoveForwardOneSpaceTowardFacingDirection_OnSingleForwardCommand(Orientation mockStartingOrientation, string forwardCommand, string expectedCoord)
         {
             var world = new World(3,3);
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoordsIn(world)).Returns(new Coordinates(1,1));
-            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(mockStartingDirection);
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(mockStartingOrientation);
             
             var rover = new Rover(mockRandomStartingPositionGenerator.Object, world);
-            rover.TranslateCommands(forwardCommand);
-            var actual = new []{rover.CurrentCoords.X, rover.CurrentCoords.Y};
+            var expectedOutput = $"Moved forward to {expectedCoord}\n";
+            var actualOutput = rover.TranslateCommands(forwardCommand);
             
-            Assert.Equal(expected, actual);
+            Assert.Equal(expectedOutput, actualOutput );
         }
         
         [Theory]
-        [InlineData(Direction.North, "b", new []{1,2})]
-        [InlineData(Direction.East, "b", new []{3,1})]
-        [InlineData(Direction.South, "b", new []{1,3})]
-        [InlineData(Direction.West, "b", new []{2,1})]
+        [InlineData(Orientation.North, "b", "1,2")]
+        [InlineData(Orientation.East, "b", "3,1")]
+        [InlineData(Orientation.South, "b", "1,3")]
+            [InlineData(Orientation.West, "b", "2,1")]
 
-        public void ShouldMoveBackwardOneSpaceFromFacingDirection_OnSingleBackwardCommand(Direction startingDirection, string backwardCommand, int[] expected)
+        public void ShouldMoveBackwardOneSpaceFromFacingDirection_OnSingleBackwardCommand(Orientation startingOrientation, string backwardCommand, string expectedCoord)
         {
             var world = new World(3,3);
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoordsIn(world)).Returns(new Coordinates(1,1));
-            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingDirection);
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingOrientation);
             
             var rover = new Rover(mockRandomStartingPositionGenerator.Object, world);
-            rover.TranslateCommands(backwardCommand);
-            var actual = new []{rover.CurrentCoords.X, rover.CurrentCoords.Y};
-            Assert.Equal(expected, actual);
+            var expectedOutput = $"Moved backward to {expectedCoord}\n";
+            var actualOutput = rover.TranslateCommands(backwardCommand);
+            
+            Assert.Equal(expectedOutput, actualOutput);
         }
 
         [Theory]
-        [InlineData(Direction.North, "l", Direction.West)]
-        [InlineData(Direction.East, "l", Direction.North)]
-        [InlineData(Direction.South, "l", Direction.East)]
-        [InlineData(Direction.West, "l", Direction.South)]
+        [InlineData(Orientation.North, "l", "Turned left towards West\n")]
+        [InlineData(Orientation.East, "l", "Turned left towards North\n")]
+        [InlineData(Orientation.South, "l", "Turned left towards East\n")]
+        [InlineData(Orientation.West, "l", "Turned left towards South\n")]
 
-        public void ShouldTurnLeft_OnSingleTurnLeftCommand(Direction startingDirection, string turnLeftCommand,
-            Direction expected)
+        public void ShouldTurnLeft_OnSingleTurnLeftCommand(Orientation startingOrientation, string turnLeftCommand,
+            string expectedOutput)
         {
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
-            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingDirection);
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingOrientation);
 
             var rover = new Rover(mockRandomStartingPositionGenerator.Object, new World(3,3));
-            rover.TranslateCommands(turnLeftCommand);
+            var actualOutput = rover.TranslateCommands(turnLeftCommand);
             
-            var actual = rover.CurrentDirection;
-            
-            Assert.Equal(expected, actual);
+            Assert.Equal(expectedOutput, actualOutput);
         }
         
         [Theory]
-        [InlineData(Direction.North, "r", Direction.East)]
-        [InlineData(Direction.East, "r", Direction.South)]
-        [InlineData(Direction.South, "r", Direction.West)]
-        [InlineData(Direction.West, "r", Direction.North)]
+        [InlineData(Orientation.North, "r", "Turned right towards East\n")]
+        [InlineData(Orientation.East, "r", "Turned right towards South\n")]
+        [InlineData(Orientation.South, "r", "Turned right towards West\n")]
+        [InlineData(Orientation.West, "r", "Turned right towards North\n")]
 
-        public void ShouldTurnRight_OnSingleTurnRightCommand(Direction startingDirection, string turnLeftCommand,
-            Direction expected)
+        public void ShouldTurnRight_OnSingleTurnRightCommand(Orientation startingOrientation, string turnLeftCommand,
+            string expectedOutput)
         {
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
-            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingDirection);
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(startingOrientation);
             var rover = new Rover(mockRandomStartingPositionGenerator.Object, new World(3,3));
+
+            var actualOutput = rover.TranslateCommands(turnLeftCommand);
             
-            rover.TranslateCommands(turnLeftCommand);
-            var actual = rover.CurrentDirection;
-            
-            Assert.Equal(expected, actual);
+            Assert.Equal(expectedOutput, actualOutput);
         }
 
         [Theory]
-        [InlineData("frflfrrb", new[]{1,2}, Direction.West)]
-        [InlineData("rFFlf", new[]{2,3}, Direction.East)]
-        [InlineData("fffblfrr", new[]{3,3}, Direction.South)]
-        public void ShouldCompleteSequenceOfCommands_OnMultipleCommands(string commands, int[] expectedPosition, Direction expectedDirection)
+        [InlineData("frflfrrb", new[]{1,2}, Orientation.West)]
+        [InlineData("rFFlf", new[]{2,3}, Orientation.East)]
+        [InlineData("fffblfrr", new[]{3,3}, Orientation.South)]
+        public void ShouldCompleteSequenceOfCommands_OnMultipleCommands(string commands, int[] expectedPosition, Orientation expectedOrientation)
         {
             var world = new World(3,3);
             var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
             mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoordsIn(world)).Returns(new Coordinates(1,1));
-            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(Direction.East);
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(Orientation.East);
             var rover = new Rover(mockRandomStartingPositionGenerator.Object, world);
             
             rover.TranslateCommands(commands); ;
             var actualPosition = new []{rover.CurrentCoords.X, rover.CurrentCoords.Y};
-            var actualDirection = rover.CurrentDirection;
+            var actualDirection = rover.CurrentOrientation;
             
             Assert.Equal(expectedPosition, actualPosition);
-            Assert.Equal(expectedDirection, actualDirection);
+            Assert.Equal(expectedOrientation, actualDirection);
+        }
+        
+        [Fact]
+        public void shouldNotMoveAndReportObstacleIfAttemptingToMoveToCoordsWithObstacle()
+        {
+
+            const int numberOfObstacles = 1;
+            var world = new World(3,3);
+            var mockObstacleCoordsGenerator = new Mock<IObstacleGenerator>();
+            var obstacleCoord = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 1);
+            mockObstacleCoordsGenerator.Setup(generator => generator
+                    .Generate(world.Coordinates, numberOfObstacles))
+                .Returns( new List<Obstacle> {new Obstacle(obstacleCoord)} );
+            
+            world.GenerateObstacleCoordinates(numberOfObstacles, mockObstacleCoordsGenerator.Object);
+            
+            var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoordsIn(world)).Returns(new Coordinates(1,2));
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(Orientation.North);
+            var rover = new Rover(mockRandomStartingPositionGenerator.Object, world);
+            
+            
+            const string expected = "Obstacle detected! Cannot move to coord 1,1\n";
+            var actual = rover.TranslateCommands("f");
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void shouldMoveToLastPossiblePointandReportObstacleForSequenceOfCommands()
+        {
+            const int numberOfObstacles = 1;
+            var world = new World(3,3);
+            var mockObstacleCoordsGenerator = new Mock<IObstacleGenerator>();
+            var obstacleCoord = world.Coordinates.Find(coord => coord.X == 1 && coord.Y == 1);
+            mockObstacleCoordsGenerator.Setup(generator => generator
+                    .Generate(world.Coordinates, numberOfObstacles))
+                .Returns( new List<Obstacle> {new Obstacle(obstacleCoord)} );
+            
+            world.GenerateObstacleCoordinates(numberOfObstacles, mockObstacleCoordsGenerator.Object);
+            
+            var mockRandomStartingPositionGenerator = new Mock<IStartingPositionGenerator>();
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingCoordsIn(world)).Returns(new Coordinates(1,2));
+            mockRandomStartingPositionGenerator.Setup(generator =>  generator.GenerateStartingDirection()).Returns(Orientation.East);
+            var rover = new Rover(mockRandomStartingPositionGenerator.Object, world);
+
+            const string expected =
+                "Moved forward to 2,2\nTurned left towards North\nMoved forward to 2,1\nTurned left towards West\nObstacle detected! Cannot move to coord 1,1\n";
+            var actual = rover.TranslateCommands("flflfffffffff"); //should encounter obstacle at third forward command, and ignore any subsequent commands 
+            
+            Assert.Equal(expected, actual);
         }
     }
+    
+    
+    
 }

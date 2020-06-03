@@ -1,6 +1,6 @@
-namespace MarsRover.Tests
+namespace MarsRover
 {
-    public readonly struct Coordinates
+    public struct Coordinates
     {
         public int X { get;}
         public int Y { get;}

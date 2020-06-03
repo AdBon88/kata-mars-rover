@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Principal;
 using MarsRover.Models;
 using Moq;
@@ -10,25 +11,6 @@ namespace MarsRover.Tests
 {
     public class GridTests
     {
-        // [Fact]
-        // public void ShouldUseGeneratedCoordsForObstacles()
-        // {
-        //     const int worldLength = 3;
-        //     const int worldHeight = 3;
-        //     const int numberOfObstacles = 3;
-        //     
-        //     var mockObstacleCoordinateGenerator = new Mock<IObstacleCoordinateGenerator>();
-        //     mockObstacleCoordinateGenerator.Setup(generator =>  generator.Generate(worldLength, worldLength, numberOfObstacles))
-        //         .Returns(new List<Coordinates>{ new Coordinates(1,1), new Coordinates(2,2), new Coordinates(3,3) });
-        //     
-        //     var world = new World(worldLength, worldHeight);
-        //     world.GeneratorObstacleCoordinates(numberOfObstacles, mockObstacleCoordinateGenerator.Object);
-        //     var expectedObstacleCoords = new List<Coordinates>{ new Coordinates(1,1), new Coordinates(2,2), new Coordinates(3,3) };
-        //     var actualObstacleCoords = world.ObstacleCoordinates;
-        //     
-        //     Assert.Equal(expectedObstacleCoords, actualObstacleCoords);
-        // }
-        
         [Fact]
         public void ShouldGenerateAllCoords()
         {

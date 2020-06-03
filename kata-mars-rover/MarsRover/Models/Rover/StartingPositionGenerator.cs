@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using MarsRover.Tests;
+using MarsRover.Models;
+using Random = System.Random;
 
 namespace MarsRover
 {
@@ -16,18 +16,19 @@ namespace MarsRover
         }
         public Coordinates GenerateStartingCoordsIn(World world)
         {
-            var availableCoords = world.Coordinates.Except(world.ObstacleCoordinates).ToList();
+            var obstacleCoordinates = world.Obstacles.Select(obstacle => obstacle.Coordinates).ToList();
+            var availableCoords = world.Coordinates.Except(obstacleCoordinates).ToList();
             var randomIndex = _random.Next(0, availableCoords.Count);
             var roverStartingCoords = availableCoords[randomIndex];
             return roverStartingCoords;
         }
         
 
-        public Direction GenerateStartingDirection()
+        public Orientation GenerateStartingDirection()
         {
             var random = new Random();
-            var numberOfDirections = Direction.GetNames(typeof(Direction)).Length;
-            var randomDirection = (Direction) random.Next(numberOfDirections);
+            var numberOfDirections = Orientation.GetNames(typeof(Orientation)).Length;
+            var randomDirection = (Orientation) random.Next(numberOfDirections);
             return randomDirection;
         }
     }
